@@ -290,7 +290,6 @@
         const headers = rows[0];
         const data = rows.slice(1);
 
-        // Try to locate common columns robustly
         const nameIdx = findColIdx(headers, ["name", "swimmer", "athlete"]);
         const idIdx = findColIdx(headers, ["swimcloud id", "id", "sc id"]);
         const groupIdx = findColIdx(headers, ["group", "team group"]);
@@ -328,7 +327,6 @@
         try {
           const roster = await loadRoster();
 
-          // Find first matching row by name (case & extra-space insensitive)
           const targetNorm = normalize(swimmerName);
           const nameIdx = roster.idx.nameIdx;
           let match = null;
@@ -339,14 +337,12 @@
             );
           }
 
-          // Fallback: if not found, attempt contains match
           if (!match && nameIdx !== -1) {
             match = roster.data.find((r) =>
               normalize(r[nameIdx]).includes(targetNorm)
             );
           }
 
-          // If still no match, pass minimal info
           const payload = match
             ? {
                 name: swimmerName,
@@ -355,13 +351,11 @@
               }
             : { name: swimmerName, rosterRow: null, indices: roster.idx };
 
-          // Persist for next page and navigate
           localStorage.setItem("selectedSwimmer", JSON.stringify(payload));
           window.location.href = `swimmer.html?name=${encodeURIComponent(
             swimmerName
           )}`;
         } catch (err) {
-          // Still navigate with minimal data if roster fetch fails
           localStorage.setItem(
             "selectedSwimmer",
             JSON.stringify({ name: swimmerName, rosterRow: null })
@@ -376,14 +370,160 @@
         document
           .querySelectorAll(".roster-list li[data-name]")
           .forEach((li) => {
+            // prevent double-binding
+            li.replaceWith(li.cloneNode(true));
+          });
+        document
+          .querySelectorAll(".roster-list li[data-name]")
+          .forEach((li) => {
             li.addEventListener("click", () => onSwimmerClick(li.dataset.name));
           });
       }
 
-      // Initial render + listeners
-      renderPointsAndSums();
-      attachRowClicks();
+      // ====== REORDER LOGIC (your desired four sections) ======
+      function reorderRosters() {
+        // Targets
+        const whiteCWList = document.getElementById("white-roster"); // highlighted list
+        const purpleCWList = document.getElementById("purple-roster"); // highlighted list
 
+        const whiteTeamBox = whiteCWList.closest(".team-box");
+        const purpleTeamBox = purpleCWList.closest(".team-box");
+
+        // The MOR list is the second roster-list inside each team box
+        const whiteMorList = whiteTeamBox.querySelectorAll("ul.roster-list")[1];
+        const purpleMorList =
+          purpleTeamBox.querySelectorAll("ul.roster-list")[1];
+
+        // Desired orders (exactly as provided)
+        const orderWhiteCW = [
+          "Peyton Cossey",
+          "Kaitlyn Davis",
+          "Andrew Fulmer",
+          "Alannah Keough",
+          "Alana Schneider",
+          "James Davis",
+          "Porter Anderson",
+          "Evie Metz",
+        ];
+
+        const orderPurpleCW = [
+          "Kira Schneider",
+          "Katie Wilson",
+          "McKaleigh Keough",
+          "James Kreel",
+          "Aubrey Lewis",
+          "Peyton Womble",
+          "Emilio Perez",
+          "Blake Zimmermann",
+        ];
+
+        const orderWhiteMOR = [
+          "Michael White",
+          "Keenan Olson",
+          "Everett Crosby",
+          "Tate Jewett",
+          "Anna Muttillo",
+          "Haley Houtz",
+          "Laura Soliman", // spelling normalized to match DOM
+          "London Bates",
+          "Chance Harper",
+          "Brian Lee",
+          // "Emily Lee" not present in DOM; if you truly need Emily vs Esther, add a new li or rename the existing one.
+          // We'll gracefully fall back to Esther Lee if present:
+          "Emily Lee",
+        ];
+
+        const orderPurpleMOR = [
+          "Bennett White",
+          "Ellis Carroll",
+          "Emma Tadd",
+          "Ellie Crosby",
+          "Hailey Mizell",
+          "Brady Houtz",
+          "Brooklyn Green",
+          "Diana Burke",
+          "Miles Ayres",
+          "Ally White",
+          "Mattie Gollings",
+        ];
+
+        // Name aliases to tolerate minor mismatches (DOM uses these spellings)
+        const aliasToDom = new Map([
+          ["Laura Solimon", "Laura Soliman"], // requested -> DOM spelling
+          ["Emily Lee", "Esther Lee"], // requested -> DOM present
+        ]);
+
+        // Build a map of existing <li data-name="..."> by normalized name
+        const allLis = Array.from(document.querySelectorAll("li[data-name]"));
+        const liByNameNorm = new Map();
+        allLis.forEach((li) => {
+          const nm = (li.dataset.name || "").trim();
+          liByNameNorm.set(normalize(nm), li);
+        });
+
+        // Helper: fetch or create an LI for a given name and target style
+        function obtainLI(name, { highlightClass = null } = {}) {
+          const wanted = aliasToDom.get(name) || name;
+          const nod = liByNameNorm.get(normalize(wanted));
+          if (nod) {
+            // Adjust highlight classes based on destination
+            nod.classList.remove("white-hl", "purple-hl");
+            if (highlightClass) nod.classList.add(highlightClass);
+            return nod;
+          }
+          // Not found: create it
+          const li = document.createElement("li");
+          li.className =
+            "clickable" + (highlightClass ? " " + highlightClass : "");
+          li.dataset.name = wanted;
+          li.textContent = wanted;
+          return li;
+        }
+
+        // Helper: clear only swimmer rows in a list (keep spacer/cup-tag)
+        function clearListDataNames(listEl) {
+          Array.from(listEl.children).forEach((child) => {
+            if (child.matches && child.matches("li[data-name]")) {
+              listEl.removeChild(child);
+            }
+          });
+        }
+
+        // Append in order after any non-swimmer items already in the list
+        function appendOrdered(listEl, names, options) {
+          const fragment = document.createDocumentFragment();
+          names.forEach((nm) => {
+            const li = obtainLI(nm, options);
+            fragment.appendChild(li);
+          });
+          listEl.appendChild(fragment);
+        }
+
+        // Rebuild CW lists
+        clearListDataNames(whiteCWList);
+        appendOrdered(whiteCWList, orderWhiteCW, {
+          highlightClass: "white-hl",
+        });
+
+        clearListDataNames(purpleCWList);
+        appendOrdered(purpleCWList, orderPurpleCW, {
+          highlightClass: "purple-hl",
+        });
+
+        // Rebuild MOR lists (no highlight class)
+        clearListDataNames(whiteMorList);
+        appendOrdered(whiteMorList, orderWhiteMOR, {});
+
+        clearListDataNames(purpleMorList);
+        appendOrdered(purpleMorList, orderPurpleMOR, {});
+      }
+
+      // ====== Boot ======
+      reorderRosters(); // put everyone in the exact order you specified
+      attachRowClicks(); // re-bind clicks after moving/creating nodes
+      renderPointsAndSums(); // update badges & team sums
+
+      // Keep sums live if points change elsewhere
       window.addEventListener("storage", (e) => {
         if (e.key && e.key.endsWith("_points")) renderPointsAndSums();
       });
