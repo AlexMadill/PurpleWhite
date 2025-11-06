@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Commonwealth RVA 2025</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <nav>
+      <h1>Commonwealth RVA 2025</h1>
+      <ul>
+        <li><a href="landing.html">Home</a></li>
+        <li><a href="index.html">Back</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <section class="intro">
+        <h2>Commonwealth RVA 2025</h2>
+        <p>
+          Select a day to view session details, or use the Swims shortcuts
+          below.
+        </p>
+
+        <div class="meet-info-box">
+          <!-- Day buttons (control full schedule content) -->
+          <div class="day-buttons">
+            <button class="day-btn" data-day="1">Day 1</button>
+            <button class="day-btn" data-day="2">Day 2</button>
+            <button class="day-btn" data-day="3">Day 3</button>
+          </div>
+
+          <!-- Swims buttons (fixed map: 1→Day1, 2→Day2, 3→Day3) -->
+          <div class="day-buttons swim-buttons">
+            <button class="day-btn swim-btn" data-swim="1">1 • Swims</button>
+            <button class="day-btn swim-btn" data-swim="2">2 • Swims</button>
+            <button class="day-btn swim-btn" data-swim="3">3 • Swims</button>
+          </div>
+
+          <!-- Dynamic content -->
+          <div id="day-content"></div>
+
+          <!-- Swims events appear here -->
+          <div id="swim-content"></div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      // ---------- CONFIG: your Google Sheet ----------
+      const SHEET_ID = "1ArQuH-hy3CDW2qvJThDnTPQ8SPLTYp7FYGUG5mbDBPA";
+      const GID = "2008079359";
+      const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}`;
+
+      // ---------- Static Meet Data ----------
+      const warmupHTML = `
+          <h3>Warm Up</h3>
+          <p><strong>7:00 – 8:50 AM</strong></p>
+          <ul class="tight">
+            <li>7:00 – 8:20 — General Warm Up</li>
+            <li>8:20 – 8:50 — Lane 1/8 Pace · 2/3/6/7 Starts · 4/5 General Warm Up (cont.)</li>
+          </ul>
+          <h3>Competition Start</h3>
+          <p><strong>9:00 AM</strong></p>
+        `;
+
+      const templates = {
+        1: `
+            <div class="schedule-card">
+              ${warmupHTML}
+              <h3>Event Line Up (Prelims)</h3>
+              <ul class="events">
+                <li>200 Free</li><li>50 Back</li><li>100 Breast</li><li>100 Fly</li>
+                <li class="break">— 10 Minute Break —</li>
+                <li>400 IM</li><li>800 Free Relay</li>
+              </ul>
+              <h3>Finals Warm Up</h3>
+              <p><strong>4:30 – 5:35 PM</strong></p>
+              <p><strong>Event Start:</strong> 5:45 PM</p>
+              <h3>Event Line Up (Finals)</h3>
+              <ul class="events">
+                <li>200 Free</li><li>50 Back</li><li>100 Breast</li><li>100 Fly</li>
+                <li>400 IM</li>
+                <li class="break">— 10 Minute Break —</li>
+                <li>800 Free Relay</li>
+              </ul>
+            </div>
+          `,
+        2: `
+            <div class="schedule-card">
+              ${warmupHTML}
+              <h3>Event Line Up (Prelims)</h3>
+              <ul class="events">
+                <li>200 Free Relay</li>
+                <li class="break">— 10 Minute Break —</li>
+                <li>200 Fly</li><li>50 Free</li><li>200 Breast</li><li>100 Back</li>
+                <li class="break">— 10 Minute Break —</li>
+                <li>500 Free</li><li>400 Medley Relay</li>
+              </ul>
+              <h3>Finals Warm Up</h3>
+              <p><strong>4:30 – 5:35 PM</strong></p>
+              <p><strong>Event Start:</strong> 5:45 PM</p>
+              <h3>Event Line Up (Finals)</h3>
+              <ul class="events">
+                <li>200 Fly</li><li>50 Free</li><li>200 Breast</li><li>100 Back</li><li>500 Free</li>
+                <li class="break">— 10 Minute Break —</li>
+                <li>400 Medley Relay</li>
+              </ul>
+            </div>
+          `,
+        3: `
+            <div class="schedule-card">
+              ${warmupHTML}
+              <h3>Event Line Up (Prelims)</h3>
+              <ul class="events">
+                <li>200 Medley Relay</li>
+                <li class="break">— 10 Minute Break —</li>
+                <li>200 Back</li><li>50 Breast</li><li>100 Free</li><li>200 IM</li><li>50 Fly</li>
+                <li class="break">— 10 Minute Break —</li>
+                <li>400 Free Relay</li><li>1650 Free</li>
+              </ul>
+              <h3>Finals Warm Up</h3>
+              <p><strong>3:30 – 4:20 PM</strong></p>
+              <p><strong>Event Start:</strong> 4:30 PM</p>
+              <h3>Event Line Up (Finals)</h3>
+              <ul class="events">
+                <li>1650 Free</li>
+                <li class="break">— 10 Minute Break —</li>
+                <li>200 Back</li><li>50 Breast</li><li>100 Free</li><li>200 IM</li><li>50 Fly</li>
+                <li class="break">— 10 Minute Break —</li>
+                <li>400 Free Relay</li>
+              </ul>
+            </div>
+          `,
+      };
+
+      const prelimEvents = {
+        1: [
+          "200 Free",
+          "50 Back",
+          "100 Breast",
+          "100 Fly",
+          "400 IM",
+          "800 Free Relay",
+        ],
+        2: [
+          "200 Free Relay",
+          "200 Fly",
+          "50 Free",
+          "200 Breast",
+          "100 Back",
+          "500 Free",
+          "400 Medley Relay",
+        ],
+        3: [
+          "200 Medley Relay",
+          "200 Back",
+          "50 Breast",
+          "100 Free",
+          "200 IM",
+          "50 Fly",
+          "400 Free Relay",
+          "1650 Free",
+        ],
+      };
+
+      // ---------- Elements ----------
+      const dayButtons = document.querySelectorAll(".day-btn[data-day]");
+      const swimButtons = document.querySelectorAll(".swim-btn");
+      const dayContentEl = document.getElementById("day-content");
+      const swimContentEl = document.getElementById("swim-content");
+
+      let activeDay = null;
+      let cachedSheet = null;
+
+      // ---------- CSV Parsing ----------
+      function parseCSV(text) {
+        const rows = [];
+        let cur = [],
+          val = "",
+          inQuotes = false;
+        for (let i = 0; i < text.length; i++) {
+          const c = text[i],
+            n = text[i + 1];
+          if (c === '"' && inQuotes && n === '"') {
+            val += '"';
+            i++;
+          } else if (c === '"') {
+            inQuotes = !inQuotes;
+          } else if (c === "," && !inQuotes) {
+            cur.push(val);
+            val = "";
+          } else if ((c === "\n" || c === "\r") && !inQuotes) {
+            if (val !== "" || cur.length) {
+              cur.push(val);
+              rows.push(cur);
+            }
+            cur = [];
+            val = "";
+            if (c === "\r" && n === "\n") i++;
+          } else {
+            val += c;
+          }
+        }
+        if (val !== "" || cur.length) {
+          cur.push(val);
+          rows.push(cur);
+        }
+        return rows;
+      }
+
+      function findColIdx(headers, needles) {
+        const lower = headers.map((h) => h.toLowerCase());
+        for (const nd of needles) {
+          const i = lower.findIndex((h) => h.includes(nd));
+          if (i !== -1) return i;
+        }
+        return -1;
+      }
+
+      function parseTimeToSeconds(str) {
+        if (!str) return Infinity;
+        const s = String(str).trim().toLowerCase();
+        if (!s || s === "nt" || s === "dq" || s === "-" || s === "na")
+          return Infinity;
+        const clean = s.replace(/[^0-9:.\s]/g, "").trim();
+        if (!clean) return Infinity;
+        const parts = clean
+          .split(":")
+          .map((p) => p.trim())
+          .filter(Boolean);
+        let sec = 0;
+        if (parts.length === 1) {
+          sec = parseFloat(parts[0]) || Infinity;
+        } else if (parts.length === 2) {
+          const [m, s2] = parts;
+          sec = (parseInt(m, 10) || 0) * 60 + (parseFloat(s2) || 0);
+        } else {
+          const [h, m, s2] = parts.slice(-3);
+          sec =
+            (parseInt(h, 10) || 0) * 3600 +
+            (parseInt(m, 10) || 0) * 60 +
+            (parseFloat(s2) || 0);
+        }
+        return isFinite(sec) ? sec : Infinity;
+      }
+
+      function genderRank(g) {
+        const t = (g || "").toString().trim().toLowerCase();
+        if (t.startsWith("f") || t.startsWith("w")) return 0;
+        if (t.startsWith("m") || t.startsWith("b")) return 1;
+        return 2;
+      }
+
+      async function loadSheet() {
+        if (cachedSheet) return cachedSheet;
+        const res = await fetch(CSV_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to load sheet CSV");
+        const csv = await res.text();
+        const rows = parseCSV(csv);
+        if (!rows.length) throw new Error("Empty sheet");
+
+        const headers = rows[0].map((h) => h.trim());
+        const dataRows = rows.slice(1);
+
+        const eventIdx = findColIdx(headers, ["event"]);
+        const genderIdx = findColIdx(headers, ["gender", "sex"]);
+        let bestIdx = findColIdx(headers, ["best time"]);
+        const seedIdx = findColIdx(headers, ["seed time"]);
+        const timeIdx =
+          bestIdx !== -1
+            ? bestIdx
+            : findColIdx(headers, ["time"]) !== -1
+            ? findColIdx(headers, ["time"])
+            : seedIdx;
+        const swimmerIdx = findColIdx(headers, ["swimmer", "athlete", "name"]);
+
+        const visibleIdxs = [];
+        if (swimmerIdx !== -1) visibleIdxs.push(swimmerIdx);
+        if (timeIdx !== -1) visibleIdxs.push(timeIdx);
+
+        cachedSheet = {
+          headers,
+          rows: dataRows,
+          eventIdx,
+          genderIdx,
+          timeIdx,
+          swimmerIdx,
+          visibleIdxs,
+        };
+        return cachedSheet;
+      }
+
+      function htmlEscape(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      // ---------- Render Event Table (Swimmer | Best Time | Swim | Points) ----------
+      function renderTable(headers, rows, genderIdx, visibleIdxs, eventName) {
+        if (!rows.length) {
+          return `<div class="no-matches">No rows found for this event.</div>`;
+        }
+
+        // Insert a break row between last Female and first Male (after sorting)
+        let breakIndex = -1;
+        if (genderIdx !== -1) {
+          for (let i = 1; i < rows.length; i++) {
+            const prev = (rows[i - 1][genderIdx] || "").toLowerCase();
+            const curr = (rows[i][genderIdx] || "").toLowerCase();
+            const pFemale = prev.startsWith("f") || prev.startsWith("w");
+            const cMale = curr.startsWith("m") || curr.startsWith("b");
+            if (pFemale && cMale) {
+              breakIndex = i;
+              break;
+            }
+          }
+        }
+
+        const swimmerIdx = visibleIdxs[0];
+        const bestIdx = visibleIdxs[1];
+
+        const thead = `
+            <thead>
+              <tr>
+                <th>${htmlEscape(headers[swimmerIdx] || "Swimmer")}</th>
+                <th>${htmlEscape(headers[bestIdx] || "Best Time")}</th>
+                <th>Swim</th>
+                <th>Points</th>
+              </tr>
+            </thead>`;
+
+        const tbody = rows
+          .map((r, i) => {
+            const breakRow =
+              i === breakIndex
+                ? `<tr class="gender-break"><td colspan="4"></td></tr>`
+                : "";
+
+            const swimmer = htmlEscape(r[swimmerIdx] ?? "");
+            const bestTime = htmlEscape(r[bestIdx] ?? "");
+            const key = `${eventName}__${swimmer}`;
+            const savedSwim = localStorage.getItem(key) || "";
+            const savedPoints = localStorage.getItem(key + "_points") || "";
+
+            return (
+              breakRow +
+              `
+              <tr>
+                <td>${swimmer}</td>
+                <td>${bestTime}</td>
+                <td><input type="text" class="swim-input" data-best="${bestTime}" data-key="${key}" value="${savedSwim}" placeholder="mm:ss.xx"/></td>
+                <td class="points-cell" data-points-key="${key}_points">${savedPoints}</td>
+              </tr>`
+            );
+          })
+          .join("");
+
+        return `
+            <div class="mini-table-wrap">
+              <table class="mini-table">
+                ${thead}
+                <tbody>${tbody}</tbody>
+              </table>
+            </div>`;
+      }
+
+      // ---------- Day Buttons (restore toggle behavior) ----------
+      dayButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const day = btn.dataset.day;
+          if (btn.classList.contains("active")) {
+            btn.classList.remove("active");
+            activeDay = null;
+            dayContentEl.innerHTML = "";
+          } else {
+            dayButtons.forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+            activeDay = day;
+            dayContentEl.innerHTML = templates[day] || "";
+          }
+        });
+      });
+
+      // ---------- Swims Buttons (fixed map: 1→Day1, etc.) ----------
+      swimButtons.forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const mappedDay = parseInt(btn.dataset.swim, 10);
+
+          if (btn.classList.contains("active")) {
+            btn.classList.remove("active");
+            swimContentEl.innerHTML = "";
+            return;
+          }
+          swimButtons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          try {
+            const { headers, rows, eventIdx, genderIdx, timeIdx, visibleIdxs } =
+              await loadSheet();
+            if (eventIdx === -1) {
+              swimContentEl.innerHTML = `<div class="schedule-card"><p><strong>No 'Event' column found.</strong></p></div>`;
+              return;
+            }
+
+            const events = prelimEvents[mappedDay] || [];
+            const sections = [];
+
+            for (const ev of events) {
+              const evLower = ev.toLowerCase();
+
+              // Filter rows for this event
+              let matches = rows.filter((r) =>
+                String(r[eventIdx] || "")
+                  .toLowerCase()
+                  .includes(evLower)
+              );
+
+              // Sort: Female → Male → unknown, and within each: slowest → fastest
+              if (genderIdx !== -1 || timeIdx !== -1) {
+                matches.sort((a, b) => {
+                  const ga = genderIdx !== -1 ? genderRank(a[genderIdx]) : 2;
+                  const gb = genderIdx !== -1 ? genderRank(b[genderIdx]) : 2;
+                  if (ga !== gb) return ga - gb;
+
+                  if (timeIdx !== -1) {
+                    const ta = parseTimeToSeconds(a[timeIdx]);
+                    const tb = parseTimeToSeconds(b[timeIdx]);
+                    return tb - ta; // slowest first
+                  }
+                  return 0;
+                });
+              }
+
+              const tableHTML = renderTable(
+                headers,
+                matches,
+                genderIdx,
+                visibleIdxs,
+                ev
+              );
+              sections.push(
+                `<div class="schedule-card"><h3>${htmlEscape(
+                  ev
+                )}</h3>${tableHTML}</div>`
+              );
+            }
+
+            swimContentEl.innerHTML = sections.join("");
+          } catch (e) {
+            swimContentEl.innerHTML = `<div class="schedule-card"><p>Error loading sheet: ${htmlEscape(
+              e.message
+            )}</p></div>`;
+          }
+        });
+      });
+
+      // ---------- Auto-format + Points + Persistence ----------
+      document.addEventListener("input", (e) => {
+        if (!e.target.classList.contains("swim-input")) return;
+
+        // live auto-format
+        let v = e.target.value.replace(/[^0-9]/g, "");
+        if (v.length === 0) e.target.value = "";
+        else if (v.length <= 2) {
+          e.target.value = "." + v.padStart(2, "0");
+        } else if (v.length <= 4) {
+          const min = v.slice(0, v.length - 2);
+          const sec = v.slice(-2);
+          e.target.value = `${parseInt(min, 10)}.${sec}`;
+        } else {
+          const min = v.slice(0, v.length - 4);
+          const sec = v.slice(-4, -2);
+          const hun = v.slice(-2);
+          e.target.value = `${parseInt(min, 10)}:${sec}.${hun}`;
+        }
+
+        // persist value
+        const key = e.target.dataset.key;
+        const bestTime = e.target.dataset.best;
+        if (key) localStorage.setItem(key, e.target.value);
+
+        // compute points
+        const pointsCell = document.querySelector(
+          `[data-points-key="${key}_points"]`
+        );
+        if (bestTime && pointsCell) {
+          const swimSec = parseTimeToSeconds(e.target.value);
+          const bestSec = parseTimeToSeconds(bestTime);
+          let pts = 0;
+          if (swimSec < bestSec) pts = 3;
+          else if (swimSec <= bestSec * 1.03) pts = 1;
+          pointsCell.textContent = pts;
+          localStorage.setItem(key + "_points", pts);
+        }
+      });
+    </script>
+  </body>
+</html>
