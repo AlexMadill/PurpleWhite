@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Swimmer Details • Purple v. White</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* Match landing/commonwealth theming */
+      :root {
+        --page-bg: #e9d5ff; /* light purple (same vibe as landing) */
+        --nav-bg: #4b2e83; /* deep purple */
+        --card-bd: #e6e0ff;
+        --head-bg: #f5f1ff;
+        --accent: #4b2e83;
+      }
+      body {
+        background: var(--page-bg);
+        color: #2e2e2e;
+        margin: 0;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial,
+          sans-serif;
+        line-height: 1.5;
+      }
+      /* NAV matches landing */
+      nav {
+        background-color: #af9ecf; /* same tone as landing/commonwealth */
+        color: #fff;
+        padding: 14px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      body {
+        background: #e6d6f5; /* same soft purple as landing */
+      }
+
+      nav h1 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+      }
+      nav ul {
+        list-style: none;
+        display: flex;
+        gap: 1rem;
+        margin: 0;
+        padding: 0;
+      }
+      nav a {
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      nav a:hover {
+        text-decoration: underline;
+      }
+
+      main {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      /* Card styling (same as others) */
+      .card {
+        background: #ffffff;
+        border: 1px solid var(--card-bd);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 1px 0 rgba(75, 46, 131, 0.04);
+      }
+
+      .section-title {
+        margin: 0 0 8px 0;
+        font-size: 1.1rem;
+        color: var(--accent);
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: #f0e9ff;
+        color: var(--accent);
+        font-weight: 700;
+        border: 1px solid #d8caff;
+        font-size: 0.9rem;
+      }
+      .flex {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      /* Tables */
+      table.detail,
+      table.entries {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+      }
+      table.detail th,
+      table.detail td,
+      table.entries th,
+      table.entries td {
+        text-align: left;
+        padding: 8px 10px;
+        border-bottom: 1px solid #eee;
+        font-size: 0.95rem;
+      }
+      table.entries thead th {
+        color: var(--accent);
+        font-weight: 700;
+        background: var(--head-bg);
+        border-bottom: 1px solid var(--card-bd);
+      }
+
+      /* Day grouping */
+      .day-header {
+        background: #ede6ff;
+        color: var(--accent);
+        font-weight: 800;
+        padding: 6px 10px;
+        border-radius: 6px;
+        margin-top: 10px;
+      }
+      .spacer-row td {
+        border-bottom: none;
+        height: 10px;
+      }
+
+      .muted {
+        color: #6b6b6b;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <h1>Purple v. White</h1>
+      <ul>
+        <li><a href="landing.html">Home</a></li>
+        <li><a href="commonwealth.html">Commonwealth RVA 2025</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <!-- Header -->
+      <div class="card">
+        <h2 class="section-title" id="swimmer-name">Swimmer</h2>
+        <div class="flex">
+          <div id="swimmer-points" class="badge">0</div>
+          <div id="swimmer-id" class="badge" style="display: none"></div>
+        </div>
+      </div>
+
+      <!-- Roster Info -->
+      <div class="card">
+        <h3 class="section-title">Roster Info</h3>
+        <table class="detail" id="roster-table"></table>
+      </div>
+
+      <!-- Actions -->
+      <div class="card">
+        <h3 class="section-title">Actions</h3>
+        <div class="flex">
+          <a
+            id="swimcloud-link"
+            href="#"
+            target="_blank"
+            rel="noopener"
+            class="badge"
+            >Open SwimCloud</a
+          >
+        </div>
+      </div>
+
+      <!-- Entries -->
+      <div class="card" id="entries-card">
+        <h3 class="section-title">Commonwealth Entries & Times</h3>
+        <div class="muted" id="entries-note">Loading entries…</div>
+        <table class="entries" id="entries-table" style="display: none">
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Best Time</th>
+              <th>Swim</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </main>
+
+    <script>
+      // ===== Utilities =====
+      function normalize(s) {
+        return (s || "").toString().trim().toLowerCase().replace(/\s+/g, " ");
+      }
+      function htmlEscape(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+      function getTotalPointsForSwimmer(name) {
+        let t = 0,
+          suffix = "__" + name + "_points";
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.endsWith(suffix)) {
+            const v = parseInt(localStorage.getItem(k), 10);
+            if (!isNaN(v)) t += v;
+          }
+        }
+        return t;
+      }
+      function parseCSV(t) {
+        const r = [];
+        let e = [],
+          a = "",
+          n = !1;
+        for (let s = 0; s < t.length; s++) {
+          const l = t[s],
+            i = t[s + 1];
+          if (l == '"' && n && i == '"') {
+            a += '"';
+            s++;
+          } else if (l == '"') {
+            n = !n;
+          } else if (l == "," && !n) {
+            e.push(a);
+            a = "";
+          } else if ((l == "\n" || l == "\r") && !n) {
+            if (a != "" || e.length) {
+              e.push(a);
+              r.push(e);
+            }
+            e = [];
+            a = "";
+            if (l == "\r" && i == "\n") s++;
+          } else {
+            a += l;
+          }
+        }
+        if (a != "" || e.length) {
+          e.push(a);
+          r.push(e);
+        }
+        return r;
+      }
+      function findColIdx(h, needles) {
+        const L = h.map((x) => normalize(x));
+        for (const n of needles.map(normalize)) {
+          const i = L.findIndex((x) => x.includes(n));
+          if (i != -1) return i;
+        }
+        return -1;
+      }
+
+      // ===== Initialize Roster Section =====
+      let SWIMMER_NAME = "Swimmer";
+      (function () {
+        const url = new URL(window.location.href);
+        const qName = url.searchParams.get("name");
+        const payload = JSON.parse(
+          localStorage.getItem("selectedSwimmer") || "{}"
+        );
+        const name = payload?.name || qName || "Swimmer";
+        SWIMMER_NAME = name;
+        document.getElementById("swimmer-name").textContent = name;
+        document.getElementById("swimmer-points").textContent =
+          getTotalPointsForSwimmer(name);
+        const tbl = document.getElementById("roster-table");
+        tbl.innerHTML = "";
+        let scId = null;
+        if (payload && payload.rosterRow) {
+          const row = payload.rosterRow;
+          Object.keys(row).forEach((k) => {
+            const v = row[k];
+            if (!k) return;
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<th>${htmlEscape(k)}</th><td>${htmlEscape(
+              v ?? ""
+            )}</td>`;
+            tbl.appendChild(tr);
+          });
+          const idKey = Object.keys(row).find(
+            (k) =>
+              normalize(k).includes("swimcloud id") ||
+              normalize(k) == "id" ||
+              normalize(k).includes("sc id")
+          );
+          if (idKey) scId = row[idKey];
+        } else {
+          const tr = document.createElement("tr");
+          tr.innerHTML = "<td colspan='2'>No roster row found.</td>";
+          tbl.appendChild(tr);
+        }
+        if (scId) {
+          const idBadge = document.getElementById("swimmer-id");
+          idBadge.style.display = "inline-block";
+          idBadge.textContent = `SC: ${scId}`;
+          document.getElementById(
+            "swimcloud-link"
+          ).href = `https://www.swimcloud.com/swimmer/${encodeURIComponent(
+            scId
+          )}/`;
+        } else {
+          document.getElementById("swimcloud-link").style.display = "none";
+        }
+      })();
+
+      // ===== Load Meet Entries =====
+      const MEET_SHEET_ID = "1ArQuH-hy3CDW2qvJThDnTPQ8SPLTYp7FYGUG5mbDBPA";
+      const MEET_GID = "2008079359";
+      const MEET_CSV = `https://docs.google.com/spreadsheets/d/${MEET_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${MEET_GID}`;
+
+      // Event order by day (mirror commonwealth)
+      const EVENT_ORDER = {
+        "Day 1": [
+          "200 Free",
+          "50 Back",
+          "100 Breast",
+          "100 Fly",
+          "400 IM",
+          "800 Free Relay",
+        ],
+        "Day 2": [
+          "200 Free Relay",
+          "200 Fly",
+          "50 Free",
+          "200 Breast",
+          "100 Back",
+          "500 Free",
+          "400 Medley Relay",
+        ],
+        "Day 3": [
+          "200 Medley Relay",
+          "200 Back",
+          "50 Breast",
+          "100 Free",
+          "200 IM",
+          "50 Fly",
+          "400 Free Relay",
+          "1650 Free",
+        ],
+      };
+
+      function getSwimInput(swimmerName, eventName) {
+        const key = `${eventName}__${swimmerName}`;
+        const val = localStorage.getItem(key);
+        return val ? String(val) : "";
+      }
+
+      async function loadEntriesForSwimmer(name) {
+        try {
+          const res = await fetch(MEET_CSV, { cache: "no-store" });
+          if (!res.ok) throw new Error("Fetch fail");
+          const csv = await res.text();
+          const rows = parseCSV(csv);
+          const headers = rows[0];
+          const data = rows.slice(1);
+          const nameIdx = findColIdx(headers, ["swimmer", "athlete", "name"]);
+          const eventIdx = findColIdx(headers, ["event"]);
+          let timeIdx = findColIdx(headers, ["best time"]);
+          if (timeIdx == -1) timeIdx = findColIdx(headers, ["time"]);
+          if (timeIdx == -1) timeIdx = findColIdx(headers, ["seed time"]);
+
+          if (nameIdx == -1 || eventIdx == -1 || timeIdx == -1) {
+            document.getElementById("entries-note").textContent =
+              "Columns missing in meet sheet.";
+            return;
+          }
+
+          const matches = data.filter(
+            (r) => normalize(r[nameIdx]) === normalize(name)
+          );
+          const tbody = document.querySelector("#entries-table tbody");
+          tbody.innerHTML = "";
+          if (!matches.length) {
+            document.getElementById("entries-note").textContent =
+              "No entries found.";
+            return;
+          }
+
+          // Group by day buckets
+          const buckets = { "Day 1": [], "Day 2": [], "Day 3": [] };
+          for (const r of matches) {
+            const ev = (r[eventIdx] || "").trim();
+            for (const [day, events] of Object.entries(EVENT_ORDER)) {
+              if (events.includes(ev)) {
+                buckets[day].push(r);
+                break;
+              }
+            }
+          }
+
+          // Render with day headers + spacers
+          let firstDay = true;
+          for (const day of ["Day 1", "Day 2", "Day 3"]) {
+            const evs = buckets[day];
+            if (!evs.length) continue;
+
+            if (!firstDay) {
+              const spacer = document.createElement("tr");
+              spacer.className = "spacer-row";
+              spacer.innerHTML = "<td colspan='3'></td>";
+              tbody.appendChild(spacer);
+            }
+            firstDay = false;
+
+            const header = document.createElement("tr");
+            const th = document.createElement("td");
+            th.colSpan = 3;
+            th.className = "day-header";
+            th.textContent = day;
+            header.appendChild(th);
+            tbody.appendChild(header);
+
+            evs.sort((a, b) => {
+              const A = EVENT_ORDER[day].indexOf((a[eventIdx] || "").trim());
+              const B = EVENT_ORDER[day].indexOf((b[eventIdx] || "").trim());
+              return (A == -1 ? 999 : A) - (B == -1 ? 999 : B);
+            });
+
+            for (const r of evs) {
+              const ev = r[eventIdx] || "";
+              const best = r[timeIdx] || "";
+              const swim = getSwimInput(SWIMMER_NAME, ev);
+              const tr = document.createElement("tr");
+              tr.innerHTML =
+                `<td>${htmlEscape(ev)}</td>` +
+                `<td>${htmlEscape(best)}</td>` +
+                `<td>${htmlEscape(swim)}</td>`;
+              tbody.appendChild(tr);
+            }
+          }
+
+          document.getElementById("entries-note").style.display = "none";
+          document.getElementById("entries-table").style.display = "";
+        } catch (e) {
+          document.getElementById("entries-note").textContent =
+            "Error loading entries.";
+        }
+      }
+
+      loadEntriesForSwimmer(SWIMMER_NAME);
+    </script>
+  </body>
+</html>

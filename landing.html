@@ -32,6 +32,9 @@
         align-items: center;
         justify-content: center;
       }
+      .clickable {
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
@@ -45,28 +48,42 @@
 
     <main>
       <section class="intro">
-        <h2>Welcome to the Competition Hub</h2>
-
+        <h2>Current Meet: Commonwealth Cup 2025</h2>
+        <h4>
+          Click a swimmer to see their entries, or click the meet below to view
+          more details
+        </h4>
+        <h2></h2>
         <div class="box-container">
           <!-- White Team -->
           <div class="team-box">
             <h3>White Team</h3>
             <div class="cup-tag">Commonwealth Cup 2025</div>
             <ul class="roster-list" id="white-roster">
-              <li class="white-hl" data-name="Andrew Fulmer">Andrew Fulmer</li>
-              <li class="white-hl" data-name="Alana Schneider">
+              <li class="white-hl clickable" data-name="Andrew Fulmer">
+                Andrew Fulmer
+              </li>
+              <li class="white-hl clickable" data-name="Alana Schneider">
                 Alana Schneider
               </li>
-              <li class="white-hl" data-name="Kira Schneider">
+              <li class="white-hl clickable" data-name="Kira Schneider">
                 Kira Schneider
               </li>
-              <li class="white-hl" data-name="Peyton Cossey">Peyton Cossey</li>
-              <li class="white-hl" data-name="Evie Metz">Evie Metz</li>
-              <li class="white-hl" data-name="James Kreel">James Kreel</li>
-              <li class="white-hl" data-name="Blake Zimmermann">
+              <li class="white-hl clickable" data-name="Peyton Cossey">
+                Peyton Cossey
+              </li>
+              <li class="white-hl clickable" data-name="Evie Metz">
+                Evie Metz
+              </li>
+              <li class="white-hl clickable" data-name="James Kreel">
+                James Kreel
+              </li>
+              <li class="white-hl clickable" data-name="Blake Zimmermann">
                 Blake Zimmermann
               </li>
-              <li class="white-hl" data-name="James Davis">James Davis</li>
+              <li class="white-hl clickable" data-name="James Davis">
+                James Davis
+              </li>
             </ul>
             <div class="sum-circle" id="white-sum">0</div>
 
@@ -74,17 +91,19 @@
               <li class="spacer"></li>
               <div class="cup-tag">MOR Atlantic 2025</div>
 
-              <li data-name="Keenan Olson">Keenan Olson</li>
-              <li data-name="Hailey Mizell">Hailey Mizell</li>
-              <li data-name="London Bates">London Bates</li>
-              <li data-name="Ellie Crosby">Ellie Crosby</li>
-              <li data-name="Bennett White">Bennett White</li>
-              <li data-name="Miles Ayres">Miles Ayres</li>
-              <li data-name="Brady Houtz">Brady Houtz</li>
-              <li data-name="Brooklyn Green">Brooklyn Green</li>
-              <li data-name="Haley Houtz">Haley Houtz</li>
-              <li data-name="Brian Lee">Brian Lee</li>
-              <li data-name="Esther Lee">Esther Lee</li>
+              <li class="clickable" data-name="Keenan Olson">Keenan Olson</li>
+              <li class="clickable" data-name="Hailey Mizell">Hailey Mizell</li>
+              <li class="clickable" data-name="London Bates">London Bates</li>
+              <li class="clickable" data-name="Ellie Crosby">Ellie Crosby</li>
+              <li class="clickable" data-name="Bennett White">Bennett White</li>
+              <li class="clickable" data-name="Miles Ayres">Miles Ayres</li>
+              <li class="clickable" data-name="Brady Houtz">Brady Houtz</li>
+              <li class="clickable" data-name="Brooklyn Green">
+                Brooklyn Green
+              </li>
+              <li class="clickable" data-name="Haley Houtz">Haley Houtz</li>
+              <li class="clickable" data-name="Brian Lee">Brian Lee</li>
+              <li class="clickable" data-name="Esther Lee">Esther Lee</li>
             </ul>
           </div>
 
@@ -93,20 +112,30 @@
             <h3>Purple Team</h3>
             <div class="cup-tag">Commonwealth Cup 2025</div>
             <ul class="roster-list" id="purple-roster">
-              <li class="purple-hl" data-name="Katie Wilson">Katie Wilson</li>
-              <li class="purple-hl" data-name="Kaitlyn Davis">Kaitlyn Davis</li>
-              <li class="purple-hl" data-name="Aubrey Lewis">Aubrey Lewis</li>
-              <li class="purple-hl" data-name="Alannah Keough">
+              <li class="purple-hl clickable" data-name="Katie Wilson">
+                Katie Wilson
+              </li>
+              <li class="purple-hl clickable" data-name="Kaitlyn Davis">
+                Kaitlyn Davis
+              </li>
+              <li class="purple-hl clickable" data-name="Aubrey Lewis">
+                Aubrey Lewis
+              </li>
+              <li class="purple-hl clickable" data-name="Alannah Keough">
                 Alannah Keough
               </li>
-              <li class="purple-hl" data-name="McKaleigh Keough">
+              <li class="purple-hl clickable" data-name="McKaleigh Keough">
                 McKaleigh Keough
               </li>
-              <li class="purple-hl" data-name="Porter Anderson">
+              <li class="purple-hl clickable" data-name="Porter Anderson">
                 Porter Anderson
               </li>
-              <li class="purple-hl" data-name="Peyton Womble">Peyton Womble</li>
-              <li class="purple-hl" data-name="Emilio Perez">Emilio Perez</li>
+              <li class="purple-hl clickable" data-name="Peyton Womble">
+                Peyton Womble
+              </li>
+              <li class="purple-hl clickable" data-name="Emilio Perez">
+                Emilio Perez
+              </li>
             </ul>
             <div class="sum-circle" id="purple-sum">0</div>
 
@@ -114,17 +143,21 @@
               <li class="spacer"></li>
               <div class="cup-tag">MOR Atlantic 2025</div>
 
-              <li data-name="Everett Crosby">Everett Crosby</li>
-              <li data-name="Tate Jewett">Tate Jewett</li>
-              <li data-name="Ellis Carroll">Ellis Carroll</li>
-              <li data-name="Michael White">Michael White</li>
-              <li data-name="Chance Harper">Chance Harper</li>
-              <li data-name="Anna Muttillo">Anna Muttillo</li>
-              <li data-name="Emma Tadd">Emma Tadd</li>
-              <li data-name="Laura Soliman">Laura Soliman</li>
-              <li data-name="Diana Burke">Diana Burke</li>
-              <li data-name="Mattie Gollings">Mattie Gollings</li>
-              <li data-name="Ally White">Ally White</li>
+              <li class="clickable" data-name="Everett Crosby">
+                Everett Crosby
+              </li>
+              <li class="clickable" data-name="Tate Jewett">Tate Jewett</li>
+              <li class="clickable" data-name="Ellis Carroll">Ellis Carroll</li>
+              <li class="clickable" data-name="Michael White">Michael White</li>
+              <li class="clickable" data-name="Chance Harper">Chance Harper</li>
+              <li class="clickable" data-name="Anna Muttillo">Anna Muttillo</li>
+              <li class="clickable" data-name="Emma Tadd">Emma Tadd</li>
+              <li class="clickable" data-name="Laura Soliman">Laura Soliman</li>
+              <li class="clickable" data-name="Diana Burke">Diana Burke</li>
+              <li class="clickable" data-name="Mattie Gollings">
+                Mattie Gollings
+              </li>
+              <li class="clickable" data-name="Ally White">Ally White</li>
             </ul>
           </div>
         </div>
@@ -140,6 +173,12 @@
     </main>
 
     <script>
+      // ====== CONFIG: Roster sheet (publicly viewable or same-origin CSV) ======
+      const ROSTER_SHEET_ID = "1YOJIYXNv43q00H1b72gQwEjTAaDt4yeRPuKAM3RSFLc";
+      const ROSTER_GID = "0";
+      const ROSTER_CSV_URL = `https://docs.google.com/spreadsheets/d/${ROSTER_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${ROSTER_GID}`;
+
+      // ====== Points badges (from Commonwealth localStorage) ======
       function getTotalPointsForSwimmer(swimmerName) {
         let total = 0;
         const suffix = "__" + swimmerName + "_points";
@@ -170,7 +209,6 @@
             li.appendChild(badge);
           });
 
-        // Sum top 8 (Commonwealth swimmers)
         const whiteNames = Array.from(
           document.querySelectorAll("#white-roster li.white-hl")
         )
@@ -195,7 +233,156 @@
         document.getElementById("purple-sum").textContent = purpleSum;
       }
 
+      // ====== CSV utilities ======
+      function parseCSV(text) {
+        const rows = [];
+        let cur = [],
+          val = "",
+          inQuotes = false;
+        for (let i = 0; i < text.length; i++) {
+          const c = text[i],
+            n = text[i + 1];
+          if (c === '"' && inQuotes && n === '"') {
+            val += '"';
+            i++;
+          } else if (c === '"') {
+            inQuotes = !inQuotes;
+          } else if (c === "," && !inQuotes) {
+            cur.push(val);
+            val = "";
+          } else if ((c === "\n" || c === "\r") && !inQuotes) {
+            if (val !== "" || cur.length) {
+              cur.push(val);
+              rows.push(cur);
+            }
+            cur = [];
+            val = "";
+            if (c === "\r" && n === "\n") i++;
+          } else {
+            val += c;
+          }
+        }
+        if (val !== "" || cur.length) {
+          cur.push(val);
+          rows.push(cur);
+        }
+        return rows;
+      }
+
+      function normalize(s) {
+        return (s || "").toString().trim().toLowerCase().replace(/\s+/g, " ");
+      }
+
+      function findColIdx(headers, needles) {
+        const lower = headers.map((h) => normalize(h));
+        for (const nd of needles.map(normalize)) {
+          const i = lower.findIndex((h) => h.includes(nd));
+          if (i !== -1) return i;
+        }
+        return -1;
+      }
+
+      async function loadRoster() {
+        const res = await fetch(ROSTER_CSV_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error("Unable to load roster CSV");
+        const csv = await res.text();
+        const rows = parseCSV(csv);
+        const headers = rows[0];
+        const data = rows.slice(1);
+
+        // Try to locate common columns robustly
+        const nameIdx = findColIdx(headers, ["name", "swimmer", "athlete"]);
+        const idIdx = findColIdx(headers, ["swimcloud id", "id", "sc id"]);
+        const groupIdx = findColIdx(headers, ["group", "team group"]);
+        const genderIdx = findColIdx(headers, ["gender", "sex"]);
+        const ageIdx = findColIdx(headers, ["age"]);
+        const coachIdx = findColIdx(headers, ["coach"]);
+        const siteIdx = findColIdx(headers, ["site", "location"]);
+        const birthdayIdx = findColIdx(headers, ["birthday", "dob"]);
+
+        return {
+          headers,
+          data,
+          idx: {
+            nameIdx,
+            idIdx,
+            groupIdx,
+            genderIdx,
+            ageIdx,
+            coachIdx,
+            siteIdx,
+            birthdayIdx,
+          },
+        };
+      }
+
+      function rowToObject(headers, row) {
+        const obj = {};
+        headers.forEach((h, i) => {
+          obj[h] = row[i];
+        });
+        return obj;
+      }
+
+      async function onSwimmerClick(swimmerName) {
+        try {
+          const roster = await loadRoster();
+
+          // Find first matching row by name (case & extra-space insensitive)
+          const targetNorm = normalize(swimmerName);
+          const nameIdx = roster.idx.nameIdx;
+          let match = null;
+
+          if (nameIdx !== -1) {
+            match = roster.data.find(
+              (r) => normalize(r[nameIdx]) === targetNorm
+            );
+          }
+
+          // Fallback: if not found, attempt contains match
+          if (!match && nameIdx !== -1) {
+            match = roster.data.find((r) =>
+              normalize(r[nameIdx]).includes(targetNorm)
+            );
+          }
+
+          // If still no match, pass minimal info
+          const payload = match
+            ? {
+                name: swimmerName,
+                rosterRow: rowToObject(roster.headers, match),
+                indices: roster.idx,
+              }
+            : { name: swimmerName, rosterRow: null, indices: roster.idx };
+
+          // Persist for next page and navigate
+          localStorage.setItem("selectedSwimmer", JSON.stringify(payload));
+          window.location.href = `swimmer.html?name=${encodeURIComponent(
+            swimmerName
+          )}`;
+        } catch (err) {
+          // Still navigate with minimal data if roster fetch fails
+          localStorage.setItem(
+            "selectedSwimmer",
+            JSON.stringify({ name: swimmerName, rosterRow: null })
+          );
+          window.location.href = `swimmer.html?name=${encodeURIComponent(
+            swimmerName
+          )}`;
+        }
+      }
+
+      function attachRowClicks() {
+        document
+          .querySelectorAll(".roster-list li[data-name]")
+          .forEach((li) => {
+            li.addEventListener("click", () => onSwimmerClick(li.dataset.name));
+          });
+      }
+
+      // Initial render + listeners
       renderPointsAndSums();
+      attachRowClicks();
 
       window.addEventListener("storage", (e) => {
         if (e.key && e.key.endsWith("_points")) renderPointsAndSums();
